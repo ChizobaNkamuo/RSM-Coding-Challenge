@@ -68,7 +68,7 @@ class Fleet():
         Returns:
             list[Starship]: A list of all undocked starships.
         """
-        return [ship for ship in self.starships if not ship.curr_base]
+        return [ship for ship in self.starships if not ship.docked_at]
     
     def get_starbases(self) -> list[Starbase]:
         """Get all starbases controlled by the fleet.

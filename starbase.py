@@ -48,7 +48,8 @@ class Starbase(Entity):
         Args:
             starship (Starship): The ship attempting to dock.
         """
-        if not self.is_dead() and self.same_fleet(starship) and self.same_sector(starship):
+
+        if not self.is_dead() and self.same_fleet(starship) and self.same_sector(starship) and not starship.is_dead() and not starship.get_docked_at():
             self.docked_ships.append(starship)
 
     def undock(self, starship: Starship) -> None:
@@ -59,6 +60,7 @@ class Starbase(Entity):
         Args:
             starship (Starship): The ship to undock.
         """
+
         for i, ship in enumerate(self.docked_ships):
             if ship == starship:
                 self.docked_ships.pop(i)

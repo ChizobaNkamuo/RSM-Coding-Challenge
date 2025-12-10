@@ -37,7 +37,6 @@ class Entity():
         self.curr_health = self.max_health = max_health
         self.max_defense_strength = max_defense
         self.disabled = False
-        self.sector = 1
         self.fleet = None
         self.fleet_id = 0
 

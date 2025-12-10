@@ -24,7 +24,7 @@ class Starship(Entity):
         super().__init__(sector, max_health, max_defense)
         self.max_attack_strength = max_attack
         self.curr_crew = self.max_crew = max_crew
-        self.curr_base = None
+        self.docked_at = None
         self.actions_to_skip = 0
         
     def get_curr_attack_strength(self) -> int:
@@ -44,6 +44,9 @@ class Starship(Entity):
         return math.floor(self.max_defense_strength * ((self.curr_health + self.curr_crew)/
                                             (self.max_health + self.max_crew)))
     
+    def get_docked_at(self) -> Starbase:
+        return self.docked_at
+    
     def move(self, sector: int) -> None:
         """Move the starship to a new sector.
 
@@ -59,7 +62,7 @@ class Starship(Entity):
             self.output(f"already in sector {sector}")
             return
         
-        if self.curr_base:
+        if self.docked_at:
             self.output("cannot move while docked")
             return
         
@@ -80,8 +83,8 @@ class Starship(Entity):
         if not self.can_perform_action():
             return
         
-        if self.curr_base:
-            self.output(f"cannot dock - already docked at {self.curr_base.get_full_name()}")
+        if self.docked_at:
+            self.output(f"cannot dock - already docked at {self.docked_at.get_full_name()}")
             return
         
         if not self.same_fleet(starbase):
@@ -96,19 +99,19 @@ class Starship(Entity):
             self.output(f"cannot dock at {starbase.get_full_name()} - starbase has been destroyed")
             return
 
-        self.curr_base = starbase
+        self.docked_at = starbase
         starbase.dock(self)
         self.output(f"has docked at {starbase.get_full_name()}")
 
     def undock(self) -> None:
         """Undock the ship from it's current starbase if it is docked.
         """
-        if self.can_perform_action() and self.curr_base:
+        if self.can_perform_action() and self.docked_at:
             if not self.is_dead():
-                self.output(f"has undocked from {self.curr_base.get_full_name()}")
+                self.output(f"has undocked from {self.docked_at.get_full_name()}")
             
-            self.curr_base.undock(self)
-            self.curr_base = None        
+            self.docked_at.undock(self)
+            self.docked_at = None        
 
     def repair(self) -> None:
         """Fully restore the ship's health and crew while docked in a starbase.
@@ -119,7 +122,7 @@ class Starship(Entity):
         if not self.can_perform_action():
             return
         
-        if not self.curr_base:
+        if not self.docked_at:
             self.output("cannot repair - not docked at a starbase")
             return
 
@@ -138,7 +141,7 @@ class Starship(Entity):
         self.curr_health = self.max_health
         self.curr_crew = self.max_crew
 
-    def attack(self, target: Entity):
+    def attack(self, target: Entity) -> None:
         """Attack a target entity in the same sector.
 
         Damage is based on the minimum of:
@@ -151,7 +154,7 @@ class Starship(Entity):
         if not self.can_perform_action(): 
             return
 
-        if self.curr_base:
+        if self.docked_at:
             self.output("cannot attack while docked")
             return
 
@@ -184,7 +187,7 @@ class Starship(Entity):
         Args:
             damage (int): The amount of damage to be deducted from the ship's health
         """
-        if not self.curr_base:
+        if not self.docked_at:
             incapacitated = math.ceil((damage / self.max_health) * self.curr_crew)
             self.curr_crew = max(self.MIN_CREW, self.curr_crew - incapacitated)
             super().take_damage(damage)
@@ -193,7 +196,7 @@ class Starship(Entity):
         """Set a ship's health to zero to be instantly destroyed if it is docked
         at a starship that gets destroyed.
         """
-        self.curr_base = None
+        self.docked_at = None
         self.take_damage(self.curr_health)
 
     def can_perform_action(self) -> bool:
