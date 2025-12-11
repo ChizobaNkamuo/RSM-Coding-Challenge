@@ -14,9 +14,6 @@ class Starbase(Entity):
 
     def __init__(self, sector: int, max_defense: int = 20, max_health: int = 500) -> None:
         super().__init__(sector, max_health, max_defense)
-        
-        self.max_defense_strength = max_defense
-        self.curr_health = self.max_health = max_health
         self.docked_ships = []
 
     def get_curr_defense_strength(self) -> int:
@@ -44,6 +41,7 @@ class Starbase(Entity):
         - It belongs to the same fleet
         - It is in the same sector as the starbase
         - The starbase is not disabled
+        - It is currently not docked at another starbase
 
         Args:
             starship (Starship): The ship attempting to dock.

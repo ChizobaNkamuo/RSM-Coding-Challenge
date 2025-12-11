@@ -50,7 +50,7 @@ class Entity():
         Returns:
             bool: True if both entities belong to the same fleet.
         """
-        return self.fleet == other.fleet
+        return self.get_fleet() == other.get_fleet()
     
     def same_sector(self, other: Entity) -> bool:
         """Check if another entity is located in the same sector.
@@ -61,15 +61,15 @@ class Entity():
         Returns:
             bool: True if both entities are in the same sector.
         """
-        return self.sector == other.sector
+        return self.get_sector() == other.get_sector()
 
     def take_damage(self, damage: int) -> None:
         """Apply damage to the entity, updating its health and disabled state.
 
         Args:
             damage (float): The amount of damage attempted to be applied.
-                The value is automatically capped so that health does not 
-                go below zero.
+            The value is automatically capped so that health does not 
+            go below zero.
         """
         damage = min(damage, self.curr_health)
         self.curr_health -= damage
@@ -112,6 +112,9 @@ class Entity():
     def get_entity_type(self) -> str:
         return self.entity_type
     
+    def get_sector(self) -> int:
+        return self.sector
+    
     def get_full_name(self) -> str:
         """Get a formatted entity name including fleet, type, and ID.
 
@@ -120,7 +123,7 @@ class Entity():
         """
         fleet = self.fleet
         if fleet:
-            return f"{fleet.name}'s {self.entity_type} #{self.fleet_id}"
+            return f"{fleet.get_name()}'s {self.entity_type} #{self.fleet_id}"
         else:
             return f"a neutral {self.entity_type}"
     

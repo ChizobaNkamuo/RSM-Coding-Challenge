@@ -92,15 +92,15 @@ class Starship(Entity):
             return
         
         if not self.same_sector(starbase):
-            self.output(f"cannot dock at {starbase.get_full_name()} - it is in sector {starbase.sector}, we are in sector {self.sector}")
+            self.output(f"cannot dock at {starbase.get_full_name()} - it is in sector {starbase.get_sector()}, we are in sector {self.sector}")
             return
 
         if starbase.is_dead():
             self.output(f"cannot dock at {starbase.get_full_name()} - starbase has been destroyed")
             return
-
-        self.docked_at = starbase
+        
         starbase.dock(self)
+        self.docked_at = starbase
         self.output(f"has docked at {starbase.get_full_name()}")
 
     def undock(self) -> None:
@@ -144,7 +144,7 @@ class Starship(Entity):
     def attack(self, target: Entity) -> None:
         """Attack a target entity in the same sector.
 
-        Damage is based on the minimum of:
+        Damage is based on the maximum of:
         - Ship's current attack strength minus the target's current defence strength
         - 5
 
@@ -163,7 +163,7 @@ class Starship(Entity):
             return
 
         if not self.same_sector(target):
-            self.output(f"cannot attack {target.get_full_name()} - target is in sector {target.sector}, we are in sector {self.sector}")
+            self.output(f"cannot attack {target.get_full_name()} - target is in sector {target.get_sector()}, we are in sector {self.sector}")
             return
 
         if target.is_dead():

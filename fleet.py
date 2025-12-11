@@ -17,7 +17,7 @@ class Fleet():
         self.starbases = []
 
     def get_entity_list(self, entity: Entity) -> list[Entity]:
-        entity_list = self.starships if entity.entity_type == "starship" else self.starbases
+        entity_list = self.starships if entity.get_entity_type() == "starship" else self.starbases
         return entity_list
 
     def add_entity(self, entity: Entity) -> None:
@@ -68,7 +68,7 @@ class Fleet():
         Returns:
             list[Starship]: A list of all undocked starships.
         """
-        return [ship for ship in self.starships if not ship.docked_at]
+        return [ship for ship in self.starships if not ship.get_docked_at()]
     
     def get_starbases(self) -> list[Starbase]:
         """Get all starbases controlled by the fleet.
@@ -77,6 +77,9 @@ class Fleet():
             list[Starbase]: The fleet's starbases.
         """
         return self.starbases
+    
+    def get_name(self) -> str:
+        return self.name
         
     def attack(self, target: Entity) -> None:
         """Order all eligible ships to attack a given target.
@@ -86,7 +89,7 @@ class Fleet():
         Args:
             target (Entity): The enemy entity to attack.
         """   
-        print(f"{self.name}'s starships have been mobilised to attack {target.get_fleet().name}'s {target.get_entity_type()}")
+        print(f"{self.name}'s starships have been mobilised to attack {target.get_fleet().get_name()}'s {target.get_entity_type()}")
         for ship in self.starships:
             if target.is_dead():
                 break
