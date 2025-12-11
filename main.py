@@ -5,13 +5,11 @@ from fleet import Fleet
 player1 = Fleet("Player1") # Intialise player 1
 player1.add_entity(Starbase(1))
 
-for i in range(3):
-    player1.add_entity(Starship(1))
-
 player2 = Fleet("Player2") # Intialise player 2
 player2.add_entity(Starbase(2))
 
-for i in range(3):
+for i in range(3): # Add 3 starships
+    player1.add_entity(Starship(1))
     player2.add_entity(Starship(2))
 
 player1.mobilise(2) # Move player 1's ships to sector 2
