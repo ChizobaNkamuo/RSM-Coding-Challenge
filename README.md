@@ -6,6 +6,6 @@ A strategic space battle game "Project Spaceship" using object-oriented programm
 - Python 3.10 or higher
 
 ## Running the demo
-```
-bash python main.py
+```bash
+python main.py
 ```
