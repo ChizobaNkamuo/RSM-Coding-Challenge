@@ -13,6 +13,7 @@ class Entity():
     """
     MIN_HEALTH = 1
     MIN_STAT = 0
+    MIN_DAMAGE = 5
 
     def validate_attributes(self, attributes: list[tuple[str, int, int]]) -> None:
         """Validate that all attributes meet their minimum thresholds.
@@ -71,6 +72,11 @@ class Entity():
             The value is automatically capped so that health does not 
             go below zero.
         """
+        if self.cloaked:
+            self.cloaked = False
+            self.output("was cloaked and so took no damage from the attack!")
+            return
+
         damage = min(damage, self.curr_health)
         self.curr_health -= damage
         message = f"took {damage} damage and now has {self.curr_health} hp remaining"
@@ -134,3 +140,43 @@ class Entity():
             message (str): The text to display after the entity's name.
         """
         print(self.get_full_name() + " " + message)
+    
+    def can_perform_action(self) -> None:
+        return True
+
+    def attack(self, target: Entity, calculated_damage: int) -> None:
+        """Attack a target entity in the same sector.
+
+        Damage is based on the maximum of:
+        - calulated_damage
+        - 5
+
+        Args:
+            target (Entity): The target to attack.
+        """
+        if not self.can_perform_action(): 
+            return
+
+        if self.docked_at:
+            self.output("cannot attack while docked")
+            return
+
+        if self.same_fleet(target):
+            self.output(f"cannot attack teammate {target.get_full_name()} - no friendly fire")
+            return
+
+        if not self.same_sector(target):
+            self.output(f"cannot attack {target.get_full_name()} - target is in sector {target.get_sector()}, we are in sector {self.sector}")
+            return
+
+        if target.is_dead():
+            self.output(f"cannot attack {target.get_full_name()} - target already destroyed")
+            return
+        
+        if self.get_entity_type() == "starbase" and calculated_damage == 0:
+            self.output(f"cannot attack {target.get_full_name()} with no ships docked")
+            return
+
+        self.output(f"attacked {target.get_full_name()}")
+        damage = max(self.MIN_DAMAGE, calculated_damage - target.get_curr_defense_strength())
+        target.take_damage(damage)

@@ -15,6 +15,7 @@ class Starbase(Entity):
     def __init__(self, sector: int, max_defense: int = 20, max_health: int = 500) -> None:
         super().__init__(sector, max_health, max_defense)
         self.docked_ships = []
+        self.docked_at = None
 
     def get_curr_defense_strength(self) -> int:
         """Calculate the starbase's current defence strength.
@@ -29,7 +30,8 @@ class Starbase(Entity):
         """
         total_docked_defense = 0
         for ship in self.docked_ships:
-            total_docked_defense += ship.get_curr_defense_strength()
+            if not ship.is_being_repaired():
+                total_docked_defense += ship.get_curr_defense_strength()
 
         return math.floor(self.max_defense_strength * (self.curr_health / self.max_health) +
                 (total_docked_defense) * (len(self.docked_ships) / self.max_defense_strength))
@@ -80,5 +82,33 @@ class Starbase(Entity):
                 ship.destroy()
             self.docked_ships.clear()
 
+    def attack(self, target: Entity) -> None:
+        """Attack a target entity in the same sector.
 
+        Damage is based on the maximum of:
+        - Total current attack strength of ships docked minus the target's current defence strength
+        - 5
 
+        No damage can be dealt if there are no ships docked
+
+        Args:
+            target (Entity): The target to attack.
+        """
+        total_docked_attack = 0
+        for ship in self.docked_ships:
+            if not ship.is_being_repaired():
+                total_docked_attack += ship.get_curr_attack_strength()
+        
+        super().attack(target, total_docked_attack)
+
+    def tow(self, sector: int) -> None:
+        """Get towed to a new sector by three friendly ships
+        Tows any docked ships to the new sector as well
+
+        Args:
+            sector (int): Sector to be towed to.
+        """    
+        self.sector = sector
+
+        for ship in self.docked_ships:
+            ship.tow(sector)

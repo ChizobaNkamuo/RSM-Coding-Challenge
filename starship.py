@@ -12,10 +12,9 @@ class Starship(Entity):
     attack enemy ships, and be repaired at friendly starbases.
     """
     entity_type = "starship"
-    MIN_DAMAGE = 5
     MIN_CREW = 1
 
-    def __init__(self, sector: int, max_attack: int = 30, max_defense:int = 10, max_crew:int = 10, max_health:int = 100):
+    def __init__(self, sector: int, max_attack: int = 30, max_defense:int = 15, max_crew:int = 10, max_health:int = 150):
         self.validate_attributes([
             ("max_health", max_health, self.MIN_STAT),
             ("max_crew", max_crew, self.MIN_CREW)
@@ -26,6 +25,8 @@ class Starship(Entity):
         self.curr_crew = self.max_crew = max_crew
         self.docked_at = None
         self.actions_to_skip = 0
+        self.cloaked = False
+        self.cloak_cooldown = 3
         
     def get_curr_attack_strength(self) -> int:
         """Calculate the starship's current attack strength.
@@ -151,28 +152,7 @@ class Starship(Entity):
         Args:
             target (Entity): The target to attack.
         """
-        if not self.can_perform_action(): 
-            return
-
-        if self.docked_at:
-            self.output("cannot attack while docked")
-            return
-
-        if self.same_fleet(target):
-            self.output(f"cannot attack teammate {target.get_full_name()} - no friendly fire")
-            return
-
-        if not self.same_sector(target):
-            self.output(f"cannot attack {target.get_full_name()} - target is in sector {target.get_sector()}, we are in sector {self.sector}")
-            return
-
-        if target.is_dead():
-            self.output(f"cannot attack {target.get_full_name()} - target already destroyed")
-            return
-
-        self.output(f"attacked {target.get_full_name()}")
-        damage = max(self.MIN_DAMAGE, self.get_curr_attack_strength() - target.get_curr_defense_strength())
-        target.take_damage(damage)
+        super().attack(target, self.get_curr_attack_strength())
 
     def take_damage(self, damage: int) -> None:
         """Handles taking damage from enemy ships.
@@ -208,7 +188,7 @@ class Starship(Entity):
         Returns:
             bool: True if the ship is available, False if repairing or disabled.
         """
-  
+
         if self.disabled:
             return False
         
@@ -219,6 +199,33 @@ class Starship(Entity):
             self.output(f"is currently being repaired and will be ready in {actions_to_skip} {"actions" if actions_to_skip > 1 else "action"}")
             self.actions_to_skip -= 1
             return False
+        
+    def is_being_repaired(self) -> bool:
+        return self.actions_to_skip != 0
 
+    def tow(self, sector: int) -> None:
+        """Tow the starship to a new sector.
 
-  
+        Separate method from move to allow for moving even while docked/repairing
+        Args:
+            sector (int): The sector number to move into.
+        """
+        if not self.docked_at:
+            self.output("cannot be towed since it is not docked at a starbase")
+            return
+        
+        self.sector = sector
+        self.output(f"has been towed into sector {sector}")
+
+    def cloak(self) -> None:
+        """Allows a starship to evade the next attack
+        """
+        if not self.can_perform_action():
+            return
+        
+        if self.cloaked:
+            self.output("is already cloaked")
+            return
+
+        self.output("has cloaked")
+        self.cloaked = True

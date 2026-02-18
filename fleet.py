@@ -94,3 +94,21 @@ class Fleet():
             if target.is_dead():
                 break
             ship.attack(target)
+    
+    def tow(self, target: Starship, sector: int) -> None:
+        """Selects 3 friendly ships in the same sector as the target starship and tow it to a new sector
+
+        Args:
+            target (Starship): Starship to be towed.
+            sector (int): Sector to be towed to.
+        """    
+        available_ships = [ship for ship in self.get_available_ships() if ship.same_sector(target)]
+
+        if len(available_ships) >= 3:
+            print(f"{self.name}'s starships are towing {target.get_full_name()} to sector {sector}")
+            for i in range(3):
+                available_ships[i].move(sector)
+            target.tow(sector)
+        else:
+            print(f"There are not enough starships to tow {target.get_full_name()} to sector {sector}")
+
